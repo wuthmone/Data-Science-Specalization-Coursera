@@ -1,4 +1,6 @@
-library("RMySQL")
+
+## Reading from MySQL
+require("RMySQL")
 con <- dbConnect(MySQL(), user = "root", password="thidarMoe@20", dbname = "wut", host="127.0.0.1")
 
 result <- dbGetQuery(con, "show databases;")
