@@ -1,0 +1,87 @@
+---
+title: "Reproducible Research: Peer Assessment 1"
+author: "Wut Hmone"
+date: "March 24, 2017"
+output: 
+  html_document:
+    keep_md: true
+---
+
+
+
+## Loading and preprocessing the data
+```{r}
+library("dplyr")
+activity = read.csv("activity.csv")
+activity = as.tbl(activity)
+head(activity,10)
+```
+
+
+
+## What is mean total number of steps taken per day?
+
+```{r}
+library(data.table)
+activity2 <- data.table(activity)
+total_steps <-activity2[,sum(steps),by="date"]
+names(total_steps) <- c("date","Total_Steps_per_Day")
+barplot(total_steps$Total_Steps_per_Day, names.arg=total_steps$date, xlab="date", ylab="steps", space = 0)
+mean_per_day <- activity2[,list(mean(steps, na.rm = T)),by="date"]
+names(mean_per_day) <- c("Date", "Mean Per Day")
+head(mean_per_day,10)
+mean(total_steps$Total_Steps_per_Day, na.rm = T)
+median(total_steps$Total_Steps_per_Day, na.rm = T)
+```
+
+
+## What is the average daily activity pattern?
+```{r}
+library(ggplot2)
+averages <-activity2[,list(mean_steps = mean(steps, na.rm = T)),by="interval"]
+head(averages)
+
+ggplot(data=averages, aes(x=interval, y=mean_steps)) +
+    geom_line() +
+    xlab("5-minute interval") +
+    ylab("average number of steps taken")
+
+maxstep <- averages[averages$mean==max(averages$mean),]
+head(maxstep)
+
+```
+
+
+
+## Imputing missing values
+```{r}
+activity$steps[is.na(activity$steps)] = mean(activity$steps, na.rm=TRUE)
+head(activity,10)
+activity_imput <- data.table(activity)
+Impute_mean <-activity_imput[,list(mean_steps = mean(steps, na.rm = T), interval),by="date"]
+head(Impute_mean,10)
+
+median(Impute_mean$mean_steps, na.rm = T)
+
+hist(activity$steps,breaks = 20, main="Histogram of the Total Number of Steps Taken Each Day _ NA filled",ylab='frequency of steps', xlab="Number of Steps")
+
+
+```
+
+
+
+## Are there differences in activity patterns between weekdays and weekends?
+
+```{r}
+library(plyr)
+library(lattice)
+
+factor(ifelse(weekdays( activity$date) %in% c("Saturday","Sunday"), "Weekend", "Weekday")) 
+
+total_num_steps_per_wday <- ddply(activity,.(interval, wday),summarise, mean_steps=mean(steps))
+xyplot(mean_steps ~ interval |  
+          wday, data = total_num_steps_per_wday, 
+       layout = c(1, 2), ylab = "number of steps", xlab = "Interval", type = 'l')
+
+```
+
