@@ -229,4 +229,17 @@ hist(activity$steps,breaks = 20, main="Histogram of the Total Number of Steps Ta
 ## Are there differences in activity patterns between weekdays and weekends?
 
 
+```{r}
 
+library(plyr)
+
+activity$wday <- as.factor(ifelse(weekdays( activity$date) %in% c("Saturday","Sunday"), "Weekend", "Weekday")) 
+
+library(lattice)
+total_num_steps_per_wday <- ddply(activity,.(interval, wday),summarise, mean_steps=mean(steps))
+xyplot(mean_steps ~ interval |  
+          wday, data = total_num_steps_per_wday, 
+       layout = c(1, 2), ylab = "number of steps", xlab = "Interval", type = 'l')
+```
+
+![](PA1_template_files/figure-html/unnamed-chunk-10.png)<!-- -->
